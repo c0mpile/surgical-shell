@@ -382,6 +382,7 @@ Singleton {
       property string wallhavenPurity: "100" // sfw only
       property string wallhavenRatios: ""
       property string wallhavenApiKey: ""
+      property bool wallhavenRetainPage: false
       property string wallhavenResolutionMode: "atleast" // "atleast" or "exact"
       property string wallhavenResolutionWidth: ""
       property string wallhavenResolutionHeight: ""

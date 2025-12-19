@@ -2770,6 +2770,13 @@
         "any": "Any",
         "label": "Aspect Ratio"
       },
+      "behavior": {
+        "label": "Behavior",
+        "retain_page": {
+           "label": "Retain page position",
+           "description": "Keep your place in the search results when closing and reopening the picker."
+        }
+      },
       "resolution": {
         "atleast": "At least",
         "exact": "Exact",
