@@ -152,18 +152,24 @@ Popup {
       NTextInput {
         id: apiKeyInput
         Layout.fillWidth: true
-        placeholderText: I18n.tr("wallpaper.panel.apikey.placeholder")
-        text: Settings.data.wallpaper.wallhavenApiKey || ""
+        
+        readonly property bool isEnvKeySet: !!Quickshell.env("NOCTALIA_WALLHAVEN_API_KEY")
+        
+        enabled: !isEnvKeySet
+        placeholderText: isEnvKeySet ? "Managed by Environment Variable" : I18n.tr("wallpaper.panel.apikey.placeholder")
+        text: isEnvKeySet ? "Managed by Environment Variable" : (Settings.data.wallpaper.wallhavenApiKey || "")
         
         // Fix for password echo mode
         Component.onCompleted: {
           if (apiKeyInput.inputItem) {
-             apiKeyInput.inputItem.echoMode = TextInput.Password;
+             apiKeyInput.inputItem.echoMode = isEnvKeySet ? TextInput.Normal : TextInput.Password;
           }
         }
 
         onEditingFinished: {
-          Settings.data.wallpaper.wallhavenApiKey = text;
+          if (!isEnvKeySet) {
+            Settings.data.wallpaper.wallhavenApiKey = text;
+          }
         }
       }
       

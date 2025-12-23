@@ -28,7 +28,7 @@ Singleton {
   property string resolutions: "" // e.g., "1920x1080,1920x1200"
   property string ratios: "" // e.g., "16x9,16x10"
   property string colors: "" // Color hex codes
-  property string apiKey: "" // User API key for NSFW access
+  property string apiKey: Quickshell.env("NOCTALIA_WALLHAVEN_API_KEY") || Settings.data.wallpaper.wallhavenApiKey || "" // User API key for NSFW access
 
   // Signals
   signal searchCompleted(var results, var meta)
