@@ -2,4 +2,4 @@
 .zed
 .idea
 .vscode
-*.workspace
+*.code-workspace
