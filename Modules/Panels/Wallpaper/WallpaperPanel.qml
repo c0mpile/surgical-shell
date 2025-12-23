@@ -15,7 +15,7 @@ SmartPanel {
 
 
   preferredWidth: isCollapsed ? (120 * Style.uiScaleRatio) : (800 * Style.uiScaleRatio)
-  preferredHeight: isCollapsed ? (40 * Style.uiScaleRatio) : (600 * Style.uiScaleRatio)
+  preferredHeight: isCollapsed ? (40 * Style.uiScaleRatio) : (screen ? (screen.height * (Settings.data.wallpaper.panelHeightPercentage / 100)) : (600 * Style.uiScaleRatio))
   preferredWidthRatio: isCollapsed ? 0 : 0.5
   preferredHeightRatio: isCollapsed ? 0 : 0.45
 
@@ -673,14 +673,28 @@ SmartPanel {
           }
         }
 
-        property int columns: (screen.width > 1920) ? 5 : 4
+        property int visibleRows: Settings.data.wallpaper.panelVisibleRows
+        
+        // Calculate cell height based on available grid height and desired rows
+        cellHeight: Math.floor((height - topMargin - bottomMargin) / visibleRows)
+
+        // Derive cell width to maintain aspect ratio (based on original 0.7 ratio)
+        // Original: cellHeight = (itemSize * 0.7) + overhead
+        // New: itemSize = (cellHeight - overhead) / 0.7
+        property int overhead: Style.marginXS + Style.fontSizeXS + Style.marginM
+        property int calculatedItemSize: Math.max(50, Math.floor((cellHeight - overhead) / 0.7))
+        
+        cellWidth: calculatedItemSize
         property int itemSize: cellWidth
 
-        cellWidth: Math.floor((width - leftMargin - rightMargin) / columns)
-        cellHeight: Math.floor(itemSize * 0.7) + Style.marginXS + Style.fontSizeXS + Style.marginM
-
-        leftMargin: Style.marginS
-        rightMargin: Style.marginS
+        leftMargin: {
+          if (!cellWidth) return Style.marginS;
+          let cols = Math.floor((width - Style.marginS * 2) / cellWidth);
+          if (cols <= 0) return Style.marginS;
+          let remaining = width - (cols * cellWidth);
+          return Math.max(Style.marginS, Math.floor(remaining / 2));
+        }
+        rightMargin: leftMargin
         topMargin: Style.marginS
         bottomMargin: Style.marginS
 
@@ -1017,14 +1031,24 @@ SmartPanel {
 
           model: wallpapers || []
 
-          property int columns: (screen.width > 1920) ? 5 : 4
+          property int visibleRows: Settings.data.wallpaper.panelVisibleRows
+          
+          cellHeight: Math.floor((height - topMargin - bottomMargin) / visibleRows)
+          
+          property int overhead: Style.marginXS + (Settings.data.wallpaper.hideWallpaperFilenames ? 0 : Style.fontSizeXS + Style.marginM)
+          property int calculatedItemSize: Math.max(50, Math.floor((cellHeight - overhead) / 0.7))
+          
+          cellWidth: calculatedItemSize
           property int itemSize: cellWidth
 
-          cellWidth: Math.floor((width - leftMargin - rightMargin) / columns)
-          cellHeight: Math.floor(itemSize * 0.7) + Style.marginXS + (Settings.data.wallpaper.hideWallpaperFilenames ? 0 : Style.fontSizeXS + Style.marginM)
-
-          leftMargin: Style.marginS
-          rightMargin: Style.marginS
+          leftMargin: {
+            if (!cellWidth) return Style.marginS;
+            let cols = Math.floor((width - Style.marginS * 2) / cellWidth);
+            if (cols <= 0) return Style.marginS;
+            let remaining = width - (cols * cellWidth);
+            return Math.max(Style.marginS, Math.floor(remaining / 2));
+          }
+          rightMargin: leftMargin
           topMargin: Style.marginS
           bottomMargin: Style.marginS
 

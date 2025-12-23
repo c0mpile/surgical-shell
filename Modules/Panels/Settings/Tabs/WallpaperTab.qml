@@ -186,6 +186,36 @@ ColumnLayout {
         Settings.data.wallpaper.panelPosition = key;
       }
     }
+
+    // Panel Height
+    ColumnLayout {
+      NValueSlider {
+        Layout.fillWidth: true
+        label: "Height Percentage"
+        description: "Choose the height of the window as a percentage of available screen space."
+        from: 45
+        to: 95
+        stepSize: 5
+        value: Settings.data.wallpaper.panelHeightPercentage
+        onMoved: value => Settings.data.wallpaper.panelHeightPercentage = value
+        text: Settings.data.wallpaper.panelHeightPercentage + "%"
+      }
+    }
+
+    // Visible Rows
+    ColumnLayout {
+      NValueSlider {
+        Layout.fillWidth: true
+        label: "Visible Rows"
+        description: "Choose how many rows should be visible at once."
+        from: 1
+        to: 5
+        stepSize: 1
+        value: Settings.data.wallpaper.panelVisibleRows
+        onMoved: value => Settings.data.wallpaper.panelVisibleRows = value
+        text: Settings.data.wallpaper.panelVisibleRows
+      }
+    }
   }
 
   NDivider {

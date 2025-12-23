@@ -373,6 +373,8 @@ Singleton {
       property real transitionEdgeSmoothness: 0.05
       property string panelPosition: "follow_bar"
       property bool hideWallpaperFilenames: false
+      property int panelHeightPercentage: 45
+      property int panelVisibleRows: 3
       // Wallhaven settings
       property bool useWallhaven: false
       property string wallhavenQuery: ""
