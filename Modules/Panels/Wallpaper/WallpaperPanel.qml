@@ -1150,8 +1150,6 @@ SmartPanel {
                 asynchronous: true
                 cache: true
                 smooth: true
-                sourceSize.width: Math.round(wallhavenGridView.itemSize * 0.67)
-                sourceSize.height: Math.round(wallhavenGridView.itemSize * 0.67)
               }
 
               Rectangle {
