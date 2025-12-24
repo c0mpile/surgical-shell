@@ -295,12 +295,7 @@ SmartPanel {
               }
             }
 
-            NIconButton {
-              icon: "chevron-up"
-              tooltipText: I18n.tr("tooltips.collapse")
-              baseSize: Style.baseWidgetSize * 0.8
-              onClicked: root.isCollapsed = true
-            }
+
 
             NIconButton {
               icon: "close"
@@ -935,7 +930,7 @@ SmartPanel {
     id: wallhavenViewRoot
     property alias gridView: wallhavenGridView
 
-    property var wallpapers: []
+    property var wallpapers: (typeof WallhavenService !== "undefined" && WallhavenService.currentResults) ? WallhavenService.currentResults : []
     property bool loading: false
     property string errorMessage: ""
     property bool initialized: false
@@ -993,18 +988,21 @@ SmartPanel {
         }
 
         // Check if we should retain previous results
-        if (Settings.data.wallpaper.wallhavenRetainPage && WallhavenService.currentResults.length > 0) {
-           wallpapers = WallhavenService.currentResults;
-           // If we have an existing error (e.g. from a failed search, maybe we shouldn't show it if we have results? 
-           // But actually if results > 0 we probably don't have an error that blocks display)
-           if (WallhavenService.lastError) {
-              errorMessage = WallhavenService.lastError;
-           }
-           // Don't set loading=true or call search
+        // If we have results and the query hasn't changed, reuse them to prevent resetting the user
+        var queryMatch = (Settings.data.wallpaper.wallhavenQuery || "") === WallhavenService.currentQuery;
+        
+        // If we have results and a match, the declarative binding already handles the data.
+        // We just need to handle the case where we NEED a search.
+        if (WallhavenService.currentResults.length === 0 || !queryMatch) {
+            // New search needed
+            loading = true;
+            WallhavenService.search(Settings.data.wallpaper.wallhavenQuery || "", 1);
         } else {
-           // Standard search logic
-           loading = true;
-           WallhavenService.search(Settings.data.wallpaper.wallhavenQuery || "", 1);
+             // Data preserved via binding. Restore error state if any.
+             if (WallhavenService.lastError) {
+                  errorMessage = WallhavenService.lastError;
+             }
+             Logger.d("WallhavenView", "Restoring previous results for query:", WallhavenService.currentQuery);
         }
       }
     }
