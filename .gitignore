@@ -3,4 +3,4 @@
 .idea
 .vscode
 *.code-workspace
-.agent
+.agent/
