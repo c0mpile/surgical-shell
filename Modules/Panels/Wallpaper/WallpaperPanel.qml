@@ -543,26 +543,7 @@ SmartPanel {
           }
         }
 
-        // Overlay gradient to smooth the hard cut due to scrolling
-        Rectangle {
-          anchors.fill: parent
-          anchors.margins: Style.borderS
-          radius: Style.radiusM
-          gradient: Gradient {
-            GradientStop {
-              position: 0.0
-              color: Color.transparent
-            }
-            GradientStop {
-              position: 0.9
-              color: Color.transparent
-            }
-            GradientStop {
-              position: 1.0
-              color: Color.mSurfaceVariant
-            }
-          }
-        }
+
       }
     }
   }
@@ -943,6 +924,10 @@ SmartPanel {
         wallhavenViewRoot.loading = false;
         wallhavenViewRoot.errorMessage = "";
         wallhavenViewRoot.searchScheduled = false;
+        // Imperatively update page input (Standard TextField)
+        if (typeof pageInput !== "undefined") {
+           pageInput.text = "" + WallhavenService.currentPage;
+        }
       }
       function onSearchFailed(error) {
         wallhavenViewRoot.loading = false;
@@ -1332,16 +1317,78 @@ SmartPanel {
           onClicked: WallhavenService.previousPage()
         }
 
-        NText {
-          text: I18n.tr("wallpaper.wallhaven.page").replace("{current}", WallhavenService.currentPage).replace("{total}", WallhavenService.lastPage)
-          color: Color.mOnSurface
-          horizontalAlignment: Text.AlignHCenter
+        RowLayout {
+          spacing: Style.marginXS
+
+          TextField {
+            id: pageInput
+            // Standard TextField styling to match theme
+            Layout.preferredWidth: 40 * Style.uiScaleRatio
+            Layout.minimumWidth: 40 * Style.uiScaleRatio
+            
+            // Minimal styling
+            background: Rectangle {
+                color: Color.mSurface
+                radius: Style.radiusS
+                border.color: pageInput.activeFocus ? Color.mSecondary : Color.mOutline
+                border.width: 1
+            }
+            color: Color.mOnSurface
+            font.pixelSize: Style.fontSizeM
+            
+            horizontalAlignment: TextInput.AlignHCenter
+            verticalAlignment: TextInput.AlignVCenter
+            
+            // Decoupled: Initialize safely
+            text: "1"
+            
+            onEditingFinished: {
+               if (typeof WallhavenService === "undefined") return;
+
+              var page = parseInt(text)
+              if (!isNaN(page) && page > 0 && page <= WallhavenService.lastPage) {
+                if (page !== WallhavenService.currentPage) {
+                  wallhavenViewRoot.loading = true
+                  WallhavenService.search(Settings.data.wallpaper.wallhavenQuery || "", page)
+                }
+              } else {
+                text = "" + WallhavenService.currentPage
+              }
+            }
+            
+            Component.onCompleted: {
+               if (typeof WallhavenService !== "undefined") {
+                  text = "" + WallhavenService.currentPage;
+               }
+            }
+          }
+
+          NText {
+             text: "of " + ((typeof WallhavenService !== "undefined") ? WallhavenService.lastPage : "1")
+             color: Color.mOnSurface
+          }
         }
 
         NIconButton {
           icon: "chevron-right"
           enabled: WallhavenService.currentPage < WallhavenService.lastPage && !WallhavenService.fetching
-          onClicked: WallhavenService.nextPage()
+          onClicked: {
+              // Custom Logic: Check if user entered a specific page manually
+              if (typeof WallhavenService === "undefined" || typeof pageInput === "undefined") {
+                  WallhavenService.nextPage()
+                  return
+              }
+
+              var inputPage = parseInt(pageInput.text.trim())
+              // If valid and explicitly different from current page, treat as manual jump
+              if (!isNaN(inputPage) && inputPage > 0 && inputPage <= WallhavenService.lastPage && inputPage !== WallhavenService.currentPage) {
+                  wallhavenViewRoot.loading = true
+                  WallhavenService.search(Settings.data.wallpaper.wallhavenQuery || "", inputPage)
+              } else {
+                  // Standard behavior
+                  WallhavenService.nextPage()
+              }
+          }
         }
 
         Item {
