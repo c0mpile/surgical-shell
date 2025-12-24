@@ -664,10 +664,20 @@ SmartPanel {
         property int itemSize: cellWidth
 
         leftMargin: {
-          if (!cellWidth) return Style.marginS;
-          let cols = Math.floor((width - Style.marginS * 2) / cellWidth);
-          if (cols <= 0) return Style.marginS;
-          let remaining = width - (cols * cellWidth);
+          if (!cellWidth || width <= 0) return Style.marginS;
+          
+          // Layout Logic with Centering
+          // 1. Calculate safe available width (subtract margins + safety buffer for scrollbar)
+          let availableWidth = width - (Style.marginS * 2) - Style.marginXL;
+          
+          // 2. Determine how many columns fit
+          let cols = Math.floor(availableWidth / cellWidth);
+          if (cols <= 0) cols = 1;
+          
+          // 3. Calculate remaining space to center the grid
+          let contentWidth = cols * cellWidth;
+          let remaining = width - contentWidth;
+          
           return Math.max(Style.marginS, Math.floor(remaining / 2));
         }
         rightMargin: leftMargin
@@ -1025,10 +1035,17 @@ SmartPanel {
           property int itemSize: cellWidth
 
           leftMargin: {
-            if (!cellWidth) return Style.marginS;
-            let cols = Math.floor((width - Style.marginS * 2) / cellWidth);
-            if (cols <= 0) return Style.marginS;
-            let remaining = width - (cols * cellWidth);
+            if (!cellWidth || width <= 0) return Style.marginS;
+            
+            // Layout Logic with Centering
+            let availableWidth = width - (Style.marginS * 2) - Style.marginXL;
+            
+            let cols = Math.floor(availableWidth / cellWidth);
+            if (cols <= 0) cols = 1;
+            
+            let contentWidth = cols * cellWidth;
+            let remaining = width - contentWidth;
+            
             return Math.max(Style.marginS, Math.floor(remaining / 2));
           }
           rightMargin: leftMargin
@@ -1125,14 +1142,14 @@ SmartPanel {
               Layout.preferredHeight: Math.round(wallhavenGridView.itemSize * 0.67)
               color: Color.transparent
 
-              NImageCached {
+              Image {
                 id: img
-                imagePath: (modelData && typeof WallhavenService !== "undefined") ? WallhavenService.getWallpaperUrl(modelData) : ""
-                cacheFolder: Settings.cacheDirImagesWallpapers
+                source: thumbnailUrl
                 anchors.fill: parent
-                fillMode: Image.PreserveAspectFit
-                sourceSize.height: 0 // Allow height to adjust to width while maintaining aspect ratio
-                sourceSize.width: 384
+                fillMode: Image.PreserveAspectCrop
+                asynchronous: true
+                cache: true
+                smooth: true
               }
 
               Rectangle {
