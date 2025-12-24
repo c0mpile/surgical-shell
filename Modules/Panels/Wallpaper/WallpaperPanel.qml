@@ -1326,34 +1326,64 @@ SmartPanel {
             Layout.preferredWidth: 40 * Style.uiScaleRatio
             Layout.minimumWidth: 40 * Style.uiScaleRatio
             
-            // Minimal styling
-            background: Rectangle {
-                color: Color.mSurface
-                radius: Style.radiusS
-                border.color: pageInput.activeFocus ? Color.mSecondary : Color.mOutline
-                border.width: 1
-            }
+            // Zero padding to align perfectly with NText
+            padding: 0
+            topPadding: 0
+            bottomPadding: 0
+            leftPadding: 0
+            rightPadding: 0
+            
+            // Minimal styling - Transparent background
+            background: null
             color: Color.mOnSurface
-            font.pixelSize: Style.fontSizeM
+            
+            // Replicate NText.qml font logic exactly
+            font.family: Settings.data.ui.fontDefault
+            font.weight: Style.fontWeightMedium
+            // pointSize * (defaultScale * uiScaleRatio)
+            font.pointSize: Style.fontSizeM * Settings.data.ui.fontDefaultScale * Style.uiScaleRatio
             
             horizontalAlignment: TextInput.AlignHCenter
             verticalAlignment: TextInput.AlignVCenter
             
+            // Selection color
+            selectedTextColor: Color.mOnPrimary
+            selectionColor: Color.mPrimary
+            
             // Decoupled: Initialize safely
             text: "1"
             
+            // Robust key handling
+            Keys.onReturnPressed: event => {
+               event.accepted = true;
+               focus = false;
+               submitPage();
+            }
+            Keys.onEnterPressed: event => {
+               event.accepted = true;
+               focus = false;
+               submitPage();
+            }
+            
+            // Keep onEditingFinished as fallback or for focus loss
             onEditingFinished: {
+               focus = false;
+               submitPage();
+            }
+            
+            function submitPage() {
                if (typeof WallhavenService === "undefined") return;
 
-              var page = parseInt(text)
-              if (!isNaN(page) && page > 0 && page <= WallhavenService.lastPage) {
-                if (page !== WallhavenService.currentPage) {
-                  wallhavenViewRoot.loading = true
-                  WallhavenService.search(Settings.data.wallpaper.wallhavenQuery || "", page)
-                }
-              } else {
-                text = "" + WallhavenService.currentPage
-              }
+               var page = parseInt(text.trim())
+               if (!isNaN(page) && page > 0 && page <= WallhavenService.lastPage) {
+                 if (page !== WallhavenService.currentPage) {
+                   wallhavenViewRoot.loading = true
+                   // Revert to using the Settings value which is reliable
+                   WallhavenService.search(Settings.data.wallpaper.wallhavenQuery || "", page)
+                 }
+               } else {
+                 text = "" + WallhavenService.currentPage
+               }
             }
             
             Component.onCompleted: {
