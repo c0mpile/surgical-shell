@@ -1125,14 +1125,14 @@ SmartPanel {
               Layout.preferredHeight: Math.round(wallhavenGridView.itemSize * 0.67)
               color: Color.transparent
 
-              Image {
+              NImageCached {
                 id: img
-                source: thumbnailUrl
+                imagePath: (modelData && typeof WallhavenService !== "undefined") ? WallhavenService.getWallpaperUrl(modelData) : ""
+                cacheFolder: Settings.cacheDirImagesWallpapers
                 anchors.fill: parent
-                fillMode: Image.PreserveAspectCrop
-                asynchronous: true
-                cache: true
-                smooth: true
+                fillMode: Image.PreserveAspectFit
+                sourceSize.height: 0 // Allow height to adjust to width while maintaining aspect ratio
+                sourceSize.width: 384
               }
 
               Rectangle {
