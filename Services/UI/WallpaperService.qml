@@ -553,50 +553,34 @@ Singleton {
   // -------------------------------------------------------------------
   function deleteLocalWallpaper(path) {
     if (!path || path === "") return;
-
     Logger.i("Wallpaper", "Deleting wallpaper:", path);
-    // Create ephemeral process for deletion
-    var processComponent = Qt.createComponent("", root);
-    var processString = `
-    import QtQuick
-    import Quickshell.Io
-    Process {
-      id: proc
-      command: ["rm", "${path}"]
-      stdout: StdioCollector {}
-      stderr: StdioCollector {}
-    }
-    `;
-
-    // Note: We need to handle potential quotes in path if we were injecting into string,
-    // but Process command array handles arguments safely preventing injection.
-    // However, creating the QML string requires care.
-    // Ideally we pass arguments via property but createQmlObject is string based.
-    // Safer approach: use a dedicated non-dynamic component or carefully escape.
-    // Since we are "Blind Architect" and need surgical precision, I will use a safer approach:
-    // Create a generic Process runner if possible, or careful string escaping.
-    // Actually, Quickshell's Process takes `command` as string list.
-    // Let's use a simpler approach: define a reusable deleter process in the object structure if possible,
-    // or just handle the string construction carefully.
-    
-    // Better Approach: Use a dedicated deleter Process object defined in the file
-    fileDeleter.targetPath = path;
+    fileDeleter.command = ["rm", path];
     fileDeleter.running = true;
+  }
+
+  function deleteLocalWallpapers(paths) {
+      if (!paths || paths.length === 0) return;
+      Logger.i("Wallpaper", "Deleting wallpapers batch:", paths.length);
+      var cmd = ["rm", "-f"];
+      for (var i = 0; i < paths.length; i++) {
+          cmd.push(paths[i]);
+      }
+      fileDeleter.command = cmd;
+      fileDeleter.running = true;
   }
   
   Process {
     id: fileDeleter
-    property string targetPath: ""
-    command: ["rm", targetPath]
+    command: [] 
     stdout: StdioCollector {}
     stderr: StdioCollector {}
     
     onExited: exitCode => {
       if (exitCode === 0) {
-        Logger.i("Wallpaper", "Deleted wallpaper successfully");
+        Logger.i("Wallpaper", "Deleted wallpaper(s) successfully");
         root.refreshWallpapersList();
       } else {
-        Logger.e("Wallpaper", "Failed to delete wallpaper. Exit code:", exitCode, "Stderr:", stderr.text);
+        Logger.e("Wallpaper", "Failed to delete wallpaper(s). Exit code:", exitCode, "Stderr:", stderr.text);
       }
     }
   }

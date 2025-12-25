@@ -134,6 +134,39 @@ SmartPanel {
     property var currentScreen: Quickshell.screens[currentScreenIndex]
     property string filterText: ""
     property alias screenRepeater: screenRepeater
+    
+    // Multi-select state
+    property bool selectionModeActive: false
+    property var selectedFiles: []
+    property int selectionRevision: 0
+
+    function toggleSelection(path) {
+      var strPath = String(path);
+      var list = selectedFiles;
+      var idx = -1;
+      for (var i = 0; i < list.length; i++) {
+        if (String(list[i]) === strPath) { idx = i; break; }
+      }
+      if (idx !== -1) {
+        var newList = [];
+        for (var j = 0; j < list.length; j++) { if (j !== idx) newList.push(list[j]); }
+        list = newList;
+      } else {
+        list = list.concat([strPath]);
+      }
+      selectedFiles = list;
+      selectionRevision++;
+    }
+
+    function clearSelection() {
+      selectedFiles = [];
+      selectionRevision++;
+    }
+    
+    function requestBatchDelete() {
+      if (selectedFiles.length === 0) return;
+      deleteDialogOverlay.openBatch(selectedFiles);
+    }
 
     Component.onCompleted: {
       root.contentItem = wallpaperPanel;
@@ -257,6 +290,7 @@ SmartPanel {
 
           RowLayout {
             Layout.fillWidth: true
+            Layout.preferredHeight: 40 * Style.uiScaleRatio
             spacing: Style.marginM
 
             NIcon {
@@ -306,6 +340,44 @@ SmartPanel {
               tooltipText: I18n.tr("tooltips.close")
               baseSize: Style.baseWidgetSize * 0.8
               onClicked: root.close()
+            }
+            
+            // Selection Mode Toggle / Actions
+            NText {
+               text: qsTr("Select")
+               font.weight: Style.fontWeightBold
+               color: wallpaperPanel.selectionModeActive ? Color.mPrimary : Color.mOnSurfaceVariant
+               visible: !Settings.data.wallpaper.useWallhaven && !wallpaperPanel.selectionModeActive
+               
+               MouseArea {
+                   anchors.fill: parent
+                   cursorShape: Qt.PointingHandCursor
+                   onClicked: wallpaperPanel.selectionModeActive = true
+               }
+            }
+            
+            // Action Buttons for Selection Mode
+            RowLayout {
+                visible: wallpaperPanel.selectionModeActive
+                spacing: Style.marginM
+                
+                NButton {
+                    text: qsTr("Cancel")
+                    onClicked: {
+                        wallpaperPanel.selectionModeActive = false
+                        wallpaperPanel.clearSelection()
+                    }
+                }
+                
+                NButton {
+                    text: qsTr("Delete (%1)").arg(wallpaperPanel.selectedFiles ? wallpaperPanel.selectedFiles.length : 0)
+                    backgroundColor: Color.mError
+                    textColor: Color.mOnError
+                    hoverColor: Qt.lighter(Color.mError, 1.1)
+                    enabled: wallpaperPanel.selectedFiles && wallpaperPanel.selectedFiles.length > 0
+                    opacity: enabled ? 1 : 0.5
+                    onClicked: wallpaperPanel.requestBatchDelete()
+                }
             }
           }
 
@@ -563,6 +635,7 @@ SmartPanel {
       visible: false
 
       property string pendingPath: ""
+      property var pendingPaths: []
 
       Behavior on opacity {
         NumberAnimation { duration: Style.animationFast }
@@ -593,7 +666,9 @@ SmartPanel {
 
           NText {
             Layout.fillWidth: true
-            text: "Delete Wallpaper"
+            text: deleteDialogOverlay.pendingPaths.length > 0 
+                  ? qsTr("Delete %1 Wallpapers?").arg(deleteDialogOverlay.pendingPaths.length)
+                  : qsTr("Delete Wallpaper?")
             horizontalAlignment: Text.AlignHCenter
             pointSize: Style.fontSizeL
             font.weight: Style.fontWeightBold
@@ -602,7 +677,9 @@ SmartPanel {
 
           NText {
             Layout.fillWidth: true
-            text: "Are you sure you want to delete this specific wallpaper file?\nThis action cannot be undone."
+            text: deleteDialogOverlay.pendingPaths.length > 0 
+                  ? qsTr("Are you sure you want to delete these %1 files?\nThis action cannot be undone.").arg(deleteDialogOverlay.pendingPaths.length)
+                  : qsTr("Are you sure you want to delete this specific wallpaper file?\nThis action cannot be undone.")
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
             pointSize: Style.fontSizeM
@@ -620,12 +697,15 @@ SmartPanel {
 
             NButton {
               text: "Delete"
-              // Surgical override for destructive action
               backgroundColor: Color.mError
               textColor: Color.mOnError
               hoverColor: Qt.lighter(Color.mError, 1.1)
               onClicked: {
-                if (deleteDialogOverlay.pendingPath !== "") {
+                if (deleteDialogOverlay.pendingPaths.length > 0) {
+                    WallpaperService.deleteLocalWallpapers(deleteDialogOverlay.pendingPaths);
+                    wallpaperPanel.selectionModeActive = false;
+                    wallpaperPanel.clearSelection();
+                } else if (deleteDialogOverlay.pendingPath !== "") {
                    WallpaperService.deleteLocalWallpaper(deleteDialogOverlay.pendingPath);
                 }
                 deleteDialogOverlay.close();
@@ -637,13 +717,24 @@ SmartPanel {
 
       function open(path) {
         pendingPath = path;
+        pendingPaths = [];
         visible = true;
       }
+      
+      function openBatch(paths) {
+        pendingPath = "";
+        pendingPaths = paths;
+        visible = true;
+      }
+      
       function close() {
         visible = false;
         pendingPath = "";
+        pendingPaths = [];
       }
     }
+
+
   }
 
   // Component for each screen's wallpaper view
@@ -728,6 +819,8 @@ SmartPanel {
 
       GridView {
         id: wallpaperGridView
+        
+        property var selectionContext: wallpaperPanel
 
         Layout.fillWidth: true
         Layout.fillHeight: true
@@ -872,6 +965,19 @@ SmartPanel {
 
           property string wallpaperPath: modelData
           property bool isSelected: (wallpaperPath === currentWallpaper)
+          property bool isSelectedInMode: {
+              if (!wallpaperGridView || !wallpaperGridView.selectionContext) return false;
+              var ctx = wallpaperGridView.selectionContext;
+              if (!ctx.selectionModeActive) return false;
+              var rev = ctx.selectionRevision;
+              var strPath = String(wallpaperPath);
+              var list = ctx.selectedFiles;
+              if (!list) return false;
+              for (var i = 0; i < list.length; i++) {
+                 if (String(list[i]) === strPath) return true;
+              }
+              return false;
+          }
           property string filename: wallpaperPath.split('/').pop()
 
           width: wallpaperGridView.itemSize
@@ -890,15 +996,21 @@ SmartPanel {
                 cursorShape: Qt.PointingHandCursor
                 
                 onClicked: {
-                    wallpaperGridView.currentIndex = index
-                    wallpaperGridView.forceActiveFocus()
-                    
-                    var path = wallpaperPath
-                    if (Settings.data.wallpaper.setWallpaperOnAllMonitors) {
-                        WallpaperService.changeWallpaper(path, undefined)
-                    } else {
-                        WallpaperService.changeWallpaper(path, targetScreen.name)
-                    }
+                  var ctx = wallpaperGridView.selectionContext;
+                   if (ctx && ctx.selectionModeActive) {
+                       if (wallpaperPath === currentWallpaper) return;
+                       ctx.toggleSelection(wallpaperPath);
+                   } else {
+                       wallpaperGridView.currentIndex = index
+                       wallpaperGridView.forceActiveFocus()
+                       
+                       var path = wallpaperPath
+                       if (Settings.data.wallpaper.setWallpaperOnAllMonitors) {
+                           WallpaperService.changeWallpaper(path, undefined)
+                       } else {
+                           WallpaperService.changeWallpaper(path, targetScreen.name)
+                       }
+                   }
                 }
             }
 
@@ -913,12 +1025,9 @@ SmartPanel {
               anchors.fill: parent
               color: Color.transparent
               border.color: {
-                if (isSelected) {
-                  return Color.mSecondary;
-                }
-                if (wallpaperGridView.currentIndex === index) {
-                  return Color.mHover;
-                }
+                if (isSelectedInMode && wallpaperGridView.selectionContext.selectionModeActive) return Color.mPrimary;
+                if (isSelected) return Color.mSecondary;
+                if (wallpaperGridView.currentIndex === index) return Color.mHover;
                 return Color.mSurface;
               }
               border.width: Math.max(1, Style.borderL * 1.5)
@@ -932,7 +1041,7 @@ SmartPanel {
                 width: 28 * Style.uiScaleRatio
                 height: 28 * Style.uiScaleRatio
                 z: 10
-                visible: (cellMouseArea.containsMouse || deleteBtnMouse.containsMouse) && !isSelected
+                visible: (cellMouseArea.containsMouse || deleteBtnMouse.containsMouse) && !isSelected && !wallpaperGridView.selectionContext.selectionModeActive
                 
                 Rectangle {
                     anchors.fill: parent
@@ -961,6 +1070,29 @@ SmartPanel {
                 }
             }
 
+            // Multi-Select Indicator (Checkmark)
+            Rectangle {
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.margins: Style.marginS
+                width: 28 * Style.uiScaleRatio
+                height: 28 * Style.uiScaleRatio
+                radius: width / 2
+                
+                visible: wallpaperGridView.selectionContext.selectionModeActive && !isSelected
+                color: isSelectedInMode ? Color.mPrimary : Qt.rgba(0,0,0,0.5)
+                border.color: Color.mOutline
+                border.width: 1
+                
+                NIcon {
+                   anchors.centerIn: parent
+                   icon: "check"
+                   pointSize: Style.fontSizeS
+                   color: Color.mOnPrimary
+                   visible: isSelectedInMode
+                }
+            }
+
             Rectangle {
               anchors.top: parent.top
               anchors.right: parent.right
@@ -971,7 +1103,7 @@ SmartPanel {
               color: Color.mSecondary
               border.color: Color.mOutline
               border.width: Style.borderS
-              visible: isSelected
+              visible: isSelected && !wallpaperGridView.selectionContext.selectionModeActive
 
               NIcon {
                 icon: "check"
@@ -984,7 +1116,7 @@ SmartPanel {
             Rectangle {
               anchors.fill: parent
               color: Color.mSurface
-              opacity: (hoverHandler.hovered || isSelected || wallpaperGridView.currentIndex === index) ? 0 : 0.3
+              opacity: (hoverHandler.hovered || isSelected || isSelectedInMode || wallpaperGridView.currentIndex === index) ? 0 : 0.3
               radius: parent.radius
               Behavior on opacity {
                 NumberAnimation {
@@ -1000,13 +1132,19 @@ SmartPanel {
 
             TapHandler {
               onTapped: {
-                wallpaperGridView.forceActiveFocus();
-                wallpaperGridView.currentIndex = index;
-                if (Settings.data.wallpaper.setWallpaperOnAllMonitors) {
-                  WallpaperService.changeWallpaper(wallpaperPath, undefined);
-                } else {
-                  WallpaperService.changeWallpaper(wallpaperPath, targetScreen.name);
-                }
+                  var ctx = wallpaperGridView.selectionContext;
+                   if (ctx && ctx.selectionModeActive) {
+                       if (wallpaperPath === currentWallpaper) return;
+                       ctx.toggleSelection(wallpaperPath);
+                   } else {
+                       wallpaperGridView.forceActiveFocus();
+                       wallpaperGridView.currentIndex = index;
+                       if (Settings.data.wallpaper.setWallpaperOnAllMonitors) {
+                         WallpaperService.changeWallpaper(wallpaperPath, undefined);
+                       } else {
+                         WallpaperService.changeWallpaper(wallpaperPath, targetScreen.name);
+                       }
+                   }
               }
             }
           }
