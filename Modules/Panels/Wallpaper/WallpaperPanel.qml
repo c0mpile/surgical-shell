@@ -139,6 +139,10 @@ SmartPanel {
       root.contentItem = wallpaperPanel;
     }
 
+    function requestDelete(path) {
+      deleteDialogOverlay.open(path);
+    }
+    
     // Function to update Wallhaven resolution filter
     function updateWallhavenResolution() {
       if (typeof WallhavenService === "undefined") {
@@ -546,6 +550,100 @@ SmartPanel {
 
       }
     }
+    
+    // -------------------------------------------------------------------------
+    // Delete Confirmation Dialog
+    // -------------------------------------------------------------------------
+    Rectangle {
+      id: deleteDialogOverlay
+      anchors.fill: parent
+      z: 999
+      color: Color.black
+      opacity: visible ? 0.6 : 0
+      visible: false
+
+      property string pendingPath: ""
+
+      Behavior on opacity {
+        NumberAnimation { duration: Style.animationFast }
+      }
+
+      MouseArea {
+        anchors.fill: parent
+        onClicked: deleteDialogOverlay.close()
+      }
+
+      Rectangle {
+        anchors.centerIn: parent
+        width: Math.min(parent.width - Style.marginL * 2, 400 * Style.uiScaleRatio)
+        height: dialogColumn.implicitHeight + Style.marginL * 2
+        color: Color.mSurface
+        radius: Style.radiusL
+        border.color: Color.mOutline
+        border.width: Style.borderS
+
+        // Prevent clicking through the dialog
+        MouseArea { anchors.fill: parent }
+
+        ColumnLayout {
+          id: dialogColumn
+          anchors.fill: parent
+          anchors.margins: Style.marginL
+          spacing: Style.marginL
+
+          NText {
+            Layout.fillWidth: true
+            text: "Delete Wallpaper"
+            horizontalAlignment: Text.AlignHCenter
+            pointSize: Style.fontSizeL
+            font.weight: Style.fontWeightBold
+            color: Color.mOnSurface
+          }
+
+          NText {
+            Layout.fillWidth: true
+            text: "Are you sure you want to delete this specific wallpaper file?\nThis action cannot be undone."
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.Wrap
+            pointSize: Style.fontSizeM
+            color: Color.mOnSurfaceVariant
+          }
+
+          RowLayout {
+            Layout.alignment: Qt.AlignHCenter
+            spacing: Style.marginM
+
+            NButton {
+              text: "Cancel"
+              onClicked: deleteDialogOverlay.close()
+            }
+
+            NButton {
+              text: "Delete"
+              // Surgical override for destructive action
+              backgroundColor: Color.mError
+              textColor: Color.mOnError
+              hoverColor: Qt.lighter(Color.mError, 1.1)
+              onClicked: {
+                if (deleteDialogOverlay.pendingPath !== "") {
+                   WallpaperService.deleteLocalWallpaper(deleteDialogOverlay.pendingPath);
+                }
+                deleteDialogOverlay.close();
+              }
+            }
+          }
+        }
+      }
+
+      function open(path) {
+        pendingPath = path;
+        visible = true;
+      }
+      function close() {
+        visible = false;
+        pendingPath = "";
+      }
+    }
   }
 
   // Component for each screen's wallpaper view
@@ -614,7 +712,13 @@ SmartPanel {
         };
       });
 
-      currentWallpaper = WallpaperService.getWallpaper(targetScreen.name);
+      // Verify that current wallpaper still exists in the new list
+      // If the file was deleted, this check prevents the UI from showing a ghost selection or crashing
+      var cw = WallpaperService.getWallpaper(targetScreen.name);
+      var exists = wallpapersList.indexOf(cw) !== -1;
+      
+      currentWallpaper = exists ? cw : "";
+      
       updateFiltered();
     }
 
@@ -778,6 +882,25 @@ SmartPanel {
             Layout.fillWidth: true
             Layout.preferredHeight: Math.round(wallpaperGridView.itemSize * 0.67)
             color: Color.transparent
+            
+            MouseArea {
+                id: cellMouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                
+                onClicked: {
+                    wallpaperGridView.currentIndex = index
+                    wallpaperGridView.forceActiveFocus()
+                    
+                    var path = wallpaperPath
+                    if (Settings.data.wallpaper.setWallpaperOnAllMonitors) {
+                        WallpaperService.changeWallpaper(path, undefined)
+                    } else {
+                        WallpaperService.changeWallpaper(path, targetScreen.name)
+                    }
+                }
+            }
 
             NImageCached {
               id: img
@@ -799,6 +922,43 @@ SmartPanel {
                 return Color.mSurface;
               }
               border.width: Math.max(1, Style.borderL * 1.5)
+            }
+            
+            // Delete button overlay
+            Item {
+                anchors.top: parent.top
+                anchors.right: parent.right
+                anchors.margins: Style.marginXS
+                width: 28 * Style.uiScaleRatio
+                height: 28 * Style.uiScaleRatio
+                z: 10
+                visible: (cellMouseArea.containsMouse || deleteBtnMouse.containsMouse) && !isSelected
+                
+                Rectangle {
+                    anchors.fill: parent
+                    radius: width / 2
+                    color: Color.mSurface
+                    opacity: 0.9
+                    border.color: Color.mOutline
+                    border.width: 1
+                }
+                
+                NIcon {
+                    anchors.centerIn: parent
+                    icon: "trash"
+                    pointSize: Style.fontSizeS
+                    color: Color.mError
+                }
+                
+                MouseArea {
+                    id: deleteBtnMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        wallpaperPanel.requestDelete(wallpaperPath);
+                    }
+                }
             }
 
             Rectangle {
