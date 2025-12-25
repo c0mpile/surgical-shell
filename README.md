@@ -49,14 +49,22 @@ _(Note: Base integration exists upstream; these are UX refinements)_
 - **Direct Page Navigation**: Type page number into input field, click next page button to jump directly
 - **Improved Input Handling**: Enhanced query fallback logic and key event handling
 
+#### Wallpaper Picker v2
+_(New "Opinionated" Standard)_
+
+- **Multi-Select Engine**: Utilizes a `selectedFiles` buffer for efficient batch management and cleaning.
+- **Safety Interlocks**: System logic prevents the deletion of the currently active wallpaper on any monitor.
+- **State-Aware UI**: Dynamic selection counter bound to `Noctalia.Theme` variables, shifting between accent and error states to communicate potential actions.
+
 ---
 
 ## Technical Architecture
 
 ### Quickshell Foundation
 
-This shell leverages Quickshell's component architecture:
+This shell leverages Quickshell's component architecture, with a strict reliance on **Quickshell IO** for all filesystem operations:
 
+- **Quickshell IO**: Native filesystem handling for performance and reliability (avoiding shell outs where possible).
 - **PanelWindow**: High-performance overlay windows for bars and panels
 - **LazyLoader**: Deferred component initialization for faster startup
 - **Variants System**: Conditional component loading based on compositor detection
