@@ -1201,14 +1201,18 @@
             "description": "写入 {filepath}"
           },
           "code": {
-            "description": "写入 {filepath}，Hyprluna 主题需要手动安装和激活"
+            "description": "写入 {filepath}",
+            "description-detected": "已应用到默认配置文件。检测到: {clients}",
+            "description-missing": "未检测到代码编辑器（VSCode 或 VSCodium）"
           },
           "description": "应用程序特定主题",
           "discord": {
-            "description": "为 {client} 写入 {filepath}，Hyprluna 主题需要手动安装和激活"
+            "description": "为 {client} 写入 {filepath}，主题需要手动激活",
+            "description-detected": "检测到: {clients}",
+            "description-missing": "未检测到 Discord 客户端"
           },
           "emacs": {
-            "description": "Doom: ~/.config/doom/themes/noctalia.el<br>标准: ~/.emacs.d/themes/noctalia.el<br>手动应用: (load-theme 'noctalia t)"
+            "description": "Doom: ~/.config/doom/themes/noctalia.el<br>标准: ~/.emacs.d/themes/noctalia.el"
           },
           "fuzzel": {
             "description": "写入 {filepath} 并重新加载"
@@ -1397,6 +1401,7 @@
         },
         "style": {
           "analog": "模拟",
+          "binary": "二进制",
           "description": "选择时钟显示样式。",
           "digital": "数字",
           "label": "时钟样式",
@@ -1921,9 +1926,9 @@
         }
       },
       "history": {
-        "section": {
-          "description": "根据紧急级别控制哪些通知保存到历史记录。",
-          "label": "历史记录"
+        "critical-urgency": {
+          "description": "将关键优先级通知保存到历史记录。",
+          "label": "将高紧急度保存到历史记录"
         },
         "low-urgency": {
           "description": "将低优先级通知保存到历史记录。",
@@ -1933,9 +1938,9 @@
           "description": "将正常优先级通知保存到历史记录。",
           "label": "将正常紧急度保存到历史记录"
         },
-        "critical-urgency": {
-          "description": "将关键优先级通知保存到历史记录。",
-          "label": "将高紧急度保存到历史记录"
+        "section": {
+          "description": "根据紧急级别控制哪些通知保存到历史记录。",
+          "label": "历史记录"
         }
       },
       "monitors": {
@@ -2292,6 +2297,10 @@
         "description": "在会话菜单顶部显示标题和关闭按钮。",
         "label": "显示标题"
       },
+      "show-number-labels": {
+        "description": "在按钮上显示数字标签（1-2-3-4...）并启用数字快捷键以快速选择。",
+        "label": "显示数字标签"
+      },
       "title": "会话菜单"
     },
     "system-monitor": {
@@ -2426,6 +2435,12 @@
     },
     "wallpaper": {
       "automation": {
+        "change-mode": {
+          "alphabetical": "按字母顺序",
+          "description": "选择自动更改时如何选择壁纸。",
+          "label": "更改模式",
+          "random": "随机"
+        },
         "custom-interval": {
           "description": "以 HH:MM 格式输入时间（例如：01:30）。",
           "label": "自定义间隔"
@@ -2437,6 +2452,10 @@
         "random-wallpaper": {
           "description": "按固定间隔调度随机壁纸更改。",
           "label": "随机壁纸"
+        },
+        "scheduled-change": {
+          "description": "按固定间隔自动更改壁纸。",
+          "label": "计划更改"
         },
         "section": {
           "label": "自动化"
@@ -2927,6 +2946,7 @@
   "wifi": {
     "panel": {
       "available-networks": "可用网络",
+      "action-required": "需要动作",
       "connect": "连接",
       "connected": "已连接",
       "disabled": "Wi-Fi 已禁用",
@@ -2938,6 +2958,7 @@
       "forget": "忘记",
       "forget-network": "忘记此网络？",
       "forgetting": "正在忘记...",
+      "frequency": "频率",
       "gateway": "网关",
       "info": "信息",
       "internet": "互联网",
@@ -2952,8 +2973,15 @@
       "scan-again": "重新扫描",
       "searching": "正在搜索附近网络...",
       "security": "安全",
-      "signal": "信号",
       "title": "Wi-Fi"
+    },
+    "signal": {
+      "excellent": "优秀",
+      "very-good": "非常好",
+      "good": "好",
+      "fair": "一般",
+      "weak": "弱",
+      "poor": "差"
     }
   }
 }

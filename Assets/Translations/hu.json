@@ -1201,14 +1201,18 @@
             "description": "{filepath} írása"
           },
           "code": {
-            "description": "{filepath} írása — A HyprLuna-témát kézileg kell telepíteni és aktiválni"
+            "description": "{filepath} írása",
+            "description-detected": "Alapértelmezett profilra alkalmazva. Észlelve: {clients}",
+            "description-missing": "Nem észlelt kódszerkesztő (VSCode vagy VSCodium)"
           },
           "description": "Alkalmazásspecifikus téma.",
           "discord": {
-            "description": "{filepath} írása a(z) {client} számára — A HyprLuna témát manuálisan kell aktiválni"
+            "description": "{filepath} írása a(z) {client} számára — A témát manuálisan kell aktiválni",
+            "description-detected": "Észlelve: {clients}",
+            "description-missing": "Nem észlelt Discord kliens"
           },
           "emacs": {
-            "description": "Doom: ~/.config/doom/themes/noctalia.el<br>Standard: ~/.emacs.d/themes/noctalia.el<br>Alkalmazás manuálisan: (load-theme 'noctalia t)"
+            "description": "Doom: ~/.config/doom/themes/noctalia.el<br>Standard: ~/.emacs.d/themes/noctalia.el"
           },
           "fuzzel": {
             "description": "{filepath} írása és újratöltés."
@@ -1397,6 +1401,7 @@
         },
         "style": {
           "analog": "Analóg",
+          "binary": "Bináris",
           "description": "Válassza ki az óra kijelzési stílusát.",
           "digital": "Digitális",
           "label": "Óra stílus",
@@ -1921,9 +1926,9 @@
         }
       },
       "history": {
-        "section": {
-          "description": "Szabályozza, hogy mely értesítések kerüljenek mentésre az előzményekbe a sürgősségi szintjük alapján.",
-          "label": "Előzmények"
+        "critical-urgency": {
+          "description": "Kritikus prioritású értesítések mentése az előzményekbe.",
+          "label": "Kritikus sürgősség mentése az előzményekbe"
         },
         "low-urgency": {
           "description": "Alacsony prioritású értesítések mentése az előzményekbe.",
@@ -1933,9 +1938,9 @@
           "description": "Normál prioritású értesítések mentése az előzményekbe.",
           "label": "Normál sürgősség mentése az előzményekbe"
         },
-        "critical-urgency": {
-          "description": "Kritikus prioritású értesítések mentése az előzményekbe.",
-          "label": "Kritikus sürgősség mentése az előzményekbe"
+        "section": {
+          "description": "Szabályozza, hogy mely értesítések kerüljenek mentésre az előzményekbe a sürgősségi szintjük alapján.",
+          "label": "Előzmények"
         }
       },
       "monitors": {
@@ -2292,6 +2297,10 @@
         "description": "A cím és a bezárás gomb megjelenítése a munkamenet menü tetején.",
         "label": "Fejléc megjelenítése"
       },
+      "show-number-labels": {
+        "description": "Számcímkék (1-2-3-4...) megjelenítése a gombokon és számbillentyűk engedélyezése a gyors kiválasztáshoz.",
+        "label": "Számcímkék megjelenítése"
+      },
       "title": "Munkamenet menü"
     },
     "system-monitor": {
@@ -2426,6 +2435,12 @@
     },
     "wallpaper": {
       "automation": {
+        "change-mode": {
+          "alphabetical": "Ábécérend",
+          "description": "Válassza ki, hogyan választódnak ki a háttérképek automatikus váltáskor.",
+          "label": "Váltási mód",
+          "random": "Véletlenszerű"
+        },
         "custom-interval": {
           "description": "Adja meg az időt ÓÓ:PP formátumban (pl. 01:30).",
           "label": "Egyéni intervallum"
@@ -2437,6 +2452,10 @@
         "random-wallpaper": {
           "description": "Ütemezze a véletlenszerű háttérképváltásokat rendszeres időközönként.",
           "label": "Véletlenszerű háttérkép"
+        },
+        "scheduled-change": {
+          "description": "Automatikusan változtassa a háttérképeket rendszeres időközönként.",
+          "label": "Ütemezett váltás"
         },
         "section": {
           "label": "Automatizálás"
@@ -2927,6 +2946,7 @@
   "wifi": {
     "panel": {
       "available-networks": "Elérhető hálózatok",
+      "action-required": "Szukseges akció",
       "connect": "Csatlakozás",
       "connected": "Csatlakozva",
       "disabled": "A Wi‑Fi ki van kapcsolva",
@@ -2938,6 +2958,7 @@
       "forget": "Elfelejtés",
       "forget-network": "Hálózat elfelejtése",
       "forgetting": "Elfelejtés…",
+      "frequency": "Frekvencia",
       "gateway": "Átjáró",
       "info": "Infó",
       "internet": "Internet",
@@ -2952,8 +2973,15 @@
       "scan-again": "Keresés újra",
       "searching": "Hálózatok keresése…",
       "security": "Biztonság",
-      "signal": "Jel",
       "title": "Wi‑Fi"
+    },
+    "signal": {
+      "excellent": "Kiválóság",
+      "very-good": "Nagyon jó",
+      "good": "Jó",
+      "fair": "Közepes",
+      "weak": "Gyenge",
+      "poor": "Rossz"
     }
   }
 }
