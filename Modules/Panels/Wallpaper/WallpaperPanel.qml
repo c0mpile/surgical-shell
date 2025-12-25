@@ -497,6 +497,9 @@ SmartPanel {
             NComboBox {
               id: sourceComboBox
               Layout.fillWidth: false
+              
+              // Match inactive workspace highlight (occupied inactive)
+              highlightColor: Color.mSecondary
 
               model: [
                 {
