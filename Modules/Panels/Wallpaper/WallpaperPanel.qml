@@ -626,34 +626,46 @@ SmartPanel {
     // -------------------------------------------------------------------------
     // Delete Confirmation Dialog
     // -------------------------------------------------------------------------
-    Rectangle {
+    Item {
       id: deleteDialogOverlay
       anchors.fill: parent
       z: 999
-      color: Color.black
-      opacity: visible ? 0.6 : 0
       visible: false
 
       property string pendingPath: ""
       property var pendingPaths: []
 
-      Behavior on opacity {
-        NumberAnimation { duration: Style.animationFast }
-      }
-
-      MouseArea {
+      // Dimmer Background
+      Rectangle {
         anchors.fill: parent
-        onClicked: deleteDialogOverlay.close()
+        color: Color.black
+        opacity: deleteDialogOverlay.visible ? 0.6 : 0
+        Behavior on opacity {
+            NumberAnimation { duration: Style.animationFast }
+        }
+        
+        MouseArea {
+            anchors.fill: parent
+            onClicked: deleteDialogOverlay.close()
+        }
       }
 
+      // Dialog Box
       Rectangle {
         anchors.centerIn: parent
         width: Math.min(parent.width - Style.marginL * 2, 400 * Style.uiScaleRatio)
         height: dialogColumn.implicitHeight + Style.marginL * 2
-        color: Color.mSurface
+        
+        color: Color.mSurface 
         radius: Style.radiusL
         border.color: Color.mOutline
         border.width: Style.borderS
+        
+        // Pop-in animation
+        scale: deleteDialogOverlay.visible ? 1 : 0.95
+        opacity: deleteDialogOverlay.visible ? 1 : 0
+        Behavior on opacity { NumberAnimation { duration: Style.animationFast } }
+        Behavior on scale { NumberAnimation { duration: Style.animationFast; easing.type: Easing.OutQuad } }
 
         // Prevent clicking through the dialog
         MouseArea { anchors.fill: parent }
