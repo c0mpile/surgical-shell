@@ -1,148 +1,131 @@
-# Noctalia shell
+# Surgical Shell
 
-**_quiet by design_**
+<div align="center">
 
-<p align="center">
-  <img src="https://assets.noctalia.dev/noctalia-logo.svg?v=2" alt="Noctalia Logo" style="width: 192px" />
-</p>
+**An opinionated, high-performance Wayland shell built on Quickshell**
 
-<p align="center">
-  <a href="https://docs.noctalia.dev/getting-started/installation">
-    <img
-      src="https://img.shields.io/badge/🌙_Install_Noctalia-A8AEFF?style=for-the-badge&labelColor=0C0D11"
-      alt="Install Noctalia"
-      style="height: 50px"
-    />
-  </a>
-</p>
+_Logic-First Backend • Visual-First Frontend • Minimal Diff Philosophy_
 
-<p align="center">
-  <a href="https://github.com/noctalia-dev/noctalia-shell/commits">
-    <img src="https://img.shields.io/github/last-commit/noctalia-dev/noctalia-shell?style=for-the-badge&labelColor=0C0D11&color=A8AEFF&logo=git&logoColor=FFFFFF&label=commit" alt="Last commit" />
-  </a>
-  <a href="https://github.com/noctalia-dev/noctalia-shell/stargazers">
-    <img src="https://img.shields.io/github/stars/noctalia-dev/noctalia-shell?style=for-the-badge&labelColor=0C0D11&color=A8AEFF&logo=github&logoColor=FFFFFF" alt="GitHub stars" />
-  </a>
-  <a href="https://docs.noctalia.dev">
-    <img src="https://img.shields.io/badge/docs-A8AEFF?style=for-the-badge&logo=gitbook&logoColor=FFFFFF&labelColor=0C0D11" alt="Documentation" />
-  </a>
-  <a href="https://discord.noctalia.dev">
-    <img src="https://img.shields.io/badge/discord-A8AEFF?style=for-the-badge&labelColor=0C0D11&logo=discord&logoColor=FFFFFF" alt="Discord" />
-  </a>
-</p>
+</div>
 
 ---
 
-## What is Noctalia?
+## Vision
 
-A beautiful, minimal desktop shell for Wayland that actually gets out of your way. Built on Quickshell with a warm lavender aesthetic that you can easily customize to match your vibe.
+This is a specialized fork of [Noctalia Shell](https://github.com/noctalia-dev/noctalia-shell), designed around the principle of **surgical modifications**: extending functionality with the absolute minimum number of lines changed. 
 
-**✨ Key Features:**
-- 🪟 Native support for Niri, Hyprland, Sway, MangoWC and labwc
-- ⚡ Built on Quickshell for performance
-- 🎯 Minimalist design philosophy
-- 🔧 Easily customizable to match your style
-- 🎨 Many color schemes available
----
+Rather than reimplementing core features, this fork preserves the upstream architecture while strategically enhancing user experience in targeted areas. All styling remains strictly bound to `Noctalia.Theme` variables to ensure consistency across modifications.
 
-## Preview
-
-https://github.com/user-attachments/assets/bf46f233-8d66-439a-a1ae-ab0446270f2d
-
-<details>
-<summary>Screenshots</summary>
-
-![Dark 1](/Assets/Screenshots/noctalia-dark-1.png)
-![Dark 2](/Assets/Screenshots/noctalia-dark-2.png)
-![Dark 3](/Assets/Screenshots/noctalia-dark-3.png)
-
-![Light 1](/Assets/Screenshots/noctalia-light-1.png)
-![Light 2](/Assets/Screenshots/noctalia-light-2.png)
-![Light 3](/Assets/Screenshots/noctalia-light-3.png)
-
-</details>
+**Philosophy**: Extension over modification. Preservation over refactoring. Surgical precision over broad rewrites.
 
 ---
 
-## 📋 Requirements
+## Feature Matrix
 
-- Wayland compositor (Niri, Hyprland, Sway, MangoWC or labwc recommended)
-- Quickshell
-- Additional dependencies are listed in our [documentation](https://docs.noctalia.dev)
+### Upstream Noctalia Core
 
----
+The foundation this fork builds upon:
 
-## 🚀 Getting Started
+- **Wayland-Native Support**: Niri, Hyprland, Sway, MangoWC, labwc
+- **Modular Plugin System**: Extensible architecture for bars, panels, desktop widgets
+- **Material You Theming**: Dynamic color generation via Matugen (rebranded as Noctalia theme)
+- **Unified UI Scaling**: Consistent scaling across all components
+- **Built-in Services**: Audio, Battery, Network, Location, Power Profile management
+- **Quickshell Foundation**: High-performance QML-based rendering engine
 
-**New to Noctalia?**  
-Check out our comprehensive documentation and installation guide to get up and running!
+### Surgical Enhancements (This Fork)
 
-<p align="center">
-  <a href="https://docs.noctalia.dev/getting-started/installation">
-    <img src="https://img.shields.io/badge/📖_Installation_Guide-A8AEFF?style=for-the-badge&logoColor=FFFFFF&labelColor=0C0D11" alt="Installation Guide" />
-  </a>
-  <a href="https://docs.noctalia.dev/getting-started/faq/">
-    <img src="https://img.shields.io/badge/❓_FAQ-A8AEFF?style=for-the-badge&logoColor=FFFFFF&labelColor=0C0D11" alt="FAQ" />
-  </a>
-  <a href="https://discord.noctalia.dev">
-    <img src="https://img.shields.io/badge/💬_Get_Help-A8AEFF?style=for-the-badge&logo=discord&logoColor=FFFFFF&labelColor=0C0D11" alt="Discord" />
-  </a>
-</p>
+Targeted improvements with minimal upstream divergence:
 
----
+#### Wallhaven Integration Improvements
+_(Note: Base integration exists upstream; these are UX refinements)_
 
-## 🖥️ Wayland Compositors
-
-Noctalia provides native support for **Niri**, **Hyprland** and **Sway**. Other Wayland compositors will work but may require additional workspace logic configuration.
+- **Responsive Window/Grid Resizing**: Wallpaper picker adapts to different screen sizes
+- **Enhanced Preview Scaling**: Improved image preview rendering for better visual feedback
+- **Flexible API Key Configuration**: 
+  - Set via Settings UI
+  - **OR** via environment variable: `env = NOCTALIA_WALLHAVEN_API_KEY,<your_key>` (Hyprland config)
+- **Persistent Browsing State**: Browser remembers current page across sessions
+- **Direct Page Navigation**: Type page number into input field, click next page button to jump directly
+- **Improved Input Handling**: Enhanced query fallback logic and key event handling
 
 ---
 
-## 🤝 Contributing
+## Technical Architecture
 
-We welcome contributions of any size - bug fixes, new features, documentation improvements, or custom themes and configs.
+### Quickshell Foundation
 
-**Get involved:**
-- **Found a bug?** [Open an issue](https://github.com/noctalia-dev/noctalia-shell/issues/new)
-- **Want to code?** Check out our [development guidelines](https://docs.noctalia.dev/development/guideline)
-- **Need help?** Join our [Discord](https://discord.noctalia.dev)
+This shell leverages Quickshell's component architecture:
 
-### ✨ Nix DevShell
+- **PanelWindow**: High-performance overlay windows for bars and panels
+- **LazyLoader**: Deferred component initialization for faster startup
+- **Variants System**: Conditional component loading based on compositor detection
+- **Service Pattern**: Singleton services initialized in `shell.qml`
 
-Nix users can use the flake's devShell to access a development environment. Run `nix develop` in the repo root to enter the dev shell. It includes packages, utilities and environment variables needed to develop Noctalia.
+### Theming Philosophy
 
----
+All visual customizations are bound to `Noctalia.Theme` variables. This ensures:
 
-## 💜 Credits
+- **Rice Consistency**: Custom colors integrate seamlessly with Material You generation
+- **Upstream Compatibility**: Theme updates from upstream don't break custom styling
+- **Surgical Merges**: Color conflicts auto-resolve to preserve custom aesthetics
 
-A heartfelt thank you to our incredible community of [**contributors**](https://github.com/noctalia-dev/noctalia-shell/graphs/contributors). We are immensely grateful for your dedicated participation and the constructive feedback you've provided, which continue to shape and improve our project for everyone.
+### Services Architecture
 
----
+Services follow a strict initialization order in `shell.qml`:
 
-## ☕ Donations
+```qml
+WallpaperService.init();
+WallpaperCacheService.init();
+AppThemeService.init();
+ColorSchemeService.init();
+// ... additional services
+```
 
-While all donations are greatly appreciated, they are completely voluntary.
-
-<a href="https://ko-fi.com/lysec">
-  <img src="https://img.shields.io/badge/donate-ko--fi-A8AEFF?style=for-the-badge&logo=kofi&logoColor=FFFFFF&labelColor=0C0D11" alt="Ko-Fi" />
-</a>
-
-### Thank you to everyone who supports the project 💜!
-* Gohma
-* DiscoCevapi
-* <a href="https://pika-os.com/" target="_blank">PikaOS</a>
-* LionHeartP
-* Nyxion ツ
-* RockDuck
-* Eynix
-* MrDowntempo
-* Tempus Thales
-* Raine
-* JustCurtis
-* llego
-* Grune
+This ensures dependency resolution and prevents race conditions during shell startup.
 
 ---
 
-## 📄 License
+## Setup & Safety
+
+> [!CAUTION]
+> **Critical Pre-Deployment Warning**
+> 
+> A broken shell configuration can kill your entire GUI session. Before deploying this fork:
+> 
+> ```bash
+> # Backup your existing Quickshell configuration
+> cp -r ~/.config/quickshell ~/.config/quickshell.backup
+> ```
+
+### Requirements
+
+- **Compositor**: Wayland compositor (Niri, Hyprland, Sway, MangoWC, or labwc recommended)
+- **Runtime**: Quickshell
+- **Dependencies**: See [Noctalia Official Docs](https://docs.noctalia.dev/) for full dependency list
+- **Optional**: Wallhaven API key for extended wallpaper browsing
+
+---
+
+## Credits & Documentation
+
+### Original Noctalia Team
+
+This fork is built upon the exceptional work of:
+
+- **Repository**: [noctalia-dev/noctalia-shell](https://github.com/noctalia-dev/noctalia-shell)
+- **Lead Developers**: [Ly-sec](https://github.com/Ly-sec), [ItsLemmy](https://github.com/ItsLemmy)
+- **Contributors**: [Full contributor graph](https://github.com/noctalia-dev/noctalia-shell/graphs/contributors)
+
+### Documentation Resources
+
+- **[Noctalia Official Documentation](https://docs.noctalia.dev/)**: Comprehensive setup, configuration, and plugin development guides
+- **[Quickshell Documentation](https://quickshell.org/docs/)**: Core framework reference for QML components and bindings
+
+---
+
+## License
 
 MIT License - see [LICENSE](./LICENSE) for details.
+
+This fork maintains the same MIT license as the upstream project. Modifications are allowed under MIT terms, with proper attribution to the original Noctalia team required.
